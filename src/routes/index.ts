@@ -1,10 +1,12 @@
 import {Request, Response, Router} from 'express'
 import authRoutes from "./auth";
 import {prismaClient} from "../index";
+import productsRoutes from "./products";
 
 const rootRouter: Router = Router();
 
 rootRouter.use('/auth', authRoutes);
+rootRouter.use('/products', productsRoutes);
 
 // Database health check route
 rootRouter.get('/db-health', async (_req: Request, res: Response) => {
