@@ -2,11 +2,17 @@ import {Request, Response, Router} from 'express'
 import authRoutes from "./auth";
 import {prismaClient} from "../index";
 import productsRoutes from "./products";
+import usersRoutes from "./users";
+import cartItemsRoutes from "./cart-items";
+import ordersRoutes from "./orders";
 
 const rootRouter: Router = Router();
 
 rootRouter.use('/auth', authRoutes);
 rootRouter.use('/products', productsRoutes);
+rootRouter.use('/users', usersRoutes);
+rootRouter.use('/cart-items', cartItemsRoutes);
+rootRouter.use('/orders', ordersRoutes);
 
 // Database health check route
 rootRouter.get('/db-health', async (_req: Request, res: Response) => {
