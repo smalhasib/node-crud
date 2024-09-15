@@ -1,29 +1,14 @@
-import {NextFunction, Request, Response} from 'express'
+import {Request, Response} from 'express'
 import {prismaClient} from "../index";
 import {compareSync, hashSync} from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import {JWT_SECRET} from "../secrets";
 import {BadRequestsException} from "../exceptions/bad-requests";
 import {ErrorCode} from "../exceptions/root";
-import {SignUpSchema} from "../schema/users";
+import {LoginSchema, SignUpSchema} from "../schema/users";
 import {NotFoundException} from "../exceptions/not-found";
 
-export const login = async (req: Request, res: Response) => {
-    const {email, password} = req.body
-
-    let user = await prismaClient.user.findFirst({where: {email}})
-    if (!user) {
-        throw new NotFoundException('User doesn\'t exists', ErrorCode.USER_NOT_FOUND);
-    }
-    if (!compareSync(password, user.password)) {
-        throw new BadRequestsException('Invalid password', ErrorCode.INVALID_PASSWORD);
-    }
-
-    const token = jwt.sign({userId: user.id}, JWT_SECRET)
-    res.json({user, token})
-}
-
-export const signup = async (req: Request, res: Response, next: NextFunction) => {
+export const signup = async (req: Request, res: Response) => {
     const {name, email, password} = SignUpSchema.parse(req.body);
 
     let user = await prismaClient.user.findFirst({where: {email}});
@@ -39,4 +24,23 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
         }
     });
     res.json(user);
+}
+
+export const login = async (req: Request, res: Response) => {
+    const {email, password} = LoginSchema.parse(req.body);
+
+    let user = await prismaClient.user.findFirst({where: {email}})
+    if (!user) {
+        throw new NotFoundException('User doesn\'t exists', ErrorCode.USER_NOT_FOUND);
+    }
+    if (!compareSync(password, user.password)) {
+        throw new BadRequestsException('Invalid password', ErrorCode.INVALID_PASSWORD);
+    }
+
+    const token = jwt.sign({userId: user.id}, JWT_SECRET)
+    res.json({user, token})
+}
+
+export const me = async (req: Request, res: Response) => {
+    res.json(req.user);
 }
