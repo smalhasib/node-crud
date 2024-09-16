@@ -13,3 +13,7 @@ export const UpdateProductSchema = z.object({
     price: z.number().optional(),
     tags: z.array(z.string()).optional(),
 })
+
+export const SearchProductSchema = z.object({
+    q: z.string(),
+})

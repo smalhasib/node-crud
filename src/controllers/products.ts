@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 import {prismaClient} from "../index";
-import {CreateProductSchema, UpdateProductSchema} from "../schema/products";
+import {CreateProductSchema, SearchProductSchema, UpdateProductSchema} from "../schema/products";
 import {NotFoundException} from "../exceptions/not-found";
 import {ErrorCode} from "../exceptions/root";
 
@@ -74,4 +74,35 @@ export const getProductById = async (req: Request, res: Response) => {
     } catch (error) {
         throw new NotFoundException("Product not found", ErrorCode.PRODUCT_NOT_FOUND);
     }
+}
+
+export const searchProducts = async (req: Request, res: Response) => {
+    const {q} = SearchProductSchema.parse(req.query);
+    const products = await prismaClient.product.findMany({
+        skip: req.query.skip ? +req.query.skip : 0,
+        take: req.query.take ? +req.query.take : 10,
+        where: {
+            OR: [
+                {
+                    name: {
+                        contains: q,
+                        mode: 'insensitive',
+                    }
+                },
+                {
+                    description: {
+                        contains: q,
+                        mode: 'insensitive',
+                    }
+                },
+                {
+                    tags: {
+                        contains: q,
+                        mode: 'insensitive',
+                    }
+                },
+            ]
+        }
+    });
+    res.json(products);
 }
